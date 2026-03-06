@@ -470,8 +470,8 @@ const AdminDashboard = () => {
                   <p className="text-sm text-blue-700">The Ultimate Family Travel Guide</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-blue-600">{giftStats.travel_ebook?.total || giftStats.travel_ebook || 0}</p>
-                  <p className="text-xs text-blue-500">{giftStats.travel_ebook?.unique || 0} unique</p>
+                  <p className="text-2xl font-bold text-blue-600">{typeof giftStats.travel_ebook === 'object' ? (giftStats.travel_ebook?.total || 0) : (giftStats.travel_ebook || 0)}</p>
+                  <p className="text-xs text-blue-500">{typeof giftStats.travel_ebook === 'object' ? (giftStats.travel_ebook?.unique || 0) : 0} unique</p>
                 </div>
               </div>
             </div>
