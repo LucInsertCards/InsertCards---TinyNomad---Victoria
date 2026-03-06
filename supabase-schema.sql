@@ -84,6 +84,36 @@ CREATE POLICY "Allow public insert" ON tn_deleted_customer_submissions
 CREATE POLICY "Allow public select" ON tn_deleted_customer_submissions
   FOR SELECT USING (true);
 
+-- Config key-value store (admin settings)
+CREATE TABLE IF NOT EXISTS tn_config (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE tn_config ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public select" ON tn_config
+  FOR SELECT USING (true);
+
+CREATE POLICY "Allow public upsert" ON tn_config
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow public update" ON tn_config
+  FOR UPDATE USING (true);
+
+-- Insert default config values
+INSERT INTO tn_config (key, value) VALUES
+  ('ebook_url', ''),
+  ('amazon_review_url_dino', 'https://amazon.com/review/create-review?asin=B0DNKC2SG5'),
+  ('amazon_review_url_unicorn', 'https://amazon.com/review/create-review'),
+  ('welcome_message', 'Thank you for your purchase!'),
+  ('welcome_subtitle', 'We''re so glad your little adventurer is ready to explore the world with their new scooter suitcase!'),
+  ('gift_title', 'The Ultimate Family Travel Guide'),
+  ('gift_description', 'Tips, hacks, and fun activities to make every family trip unforgettable. From airport survival tips to kid-friendly destinations — everything you need for stress-free travel with your little nomad!')
+ON CONFLICT (key) DO NOTHING;
+
 -- Comments
 COMMENT ON TABLE tn_customer_submissions IS 'TinyNomad - Customer submissions for scooter suitcase review funnel';
 COMMENT ON COLUMN tn_customer_submissions.product_slug IS 'Product identifier: dino or unicorn';
+COMMENT ON TABLE tn_config IS 'TinyNomad - Admin config key-value store';

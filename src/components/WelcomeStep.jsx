@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-const WelcomeStep = ({ onContinue, onSkipToGifts, theme }) => {
+const WelcomeStep = ({ onContinue, onSkipToGifts, theme, config = {} }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [showAdditionalContent, setShowAdditionalContent] = useState(false);
   const [showButton, setShowButton] = useState(false);
 
-  const mainText = "Thank you for your purchase!";
+  const mainText = config.welcome_message || "Thank you for your purchase!";
   const typingSpeed = 45;
 
   useEffect(() => {
@@ -60,7 +60,7 @@ const WelcomeStep = ({ onContinue, onSkipToGifts, theme }) => {
             }`}
           >
             <p className="text-base md:text-lg text-gray-700 leading-relaxed px-4">
-              We're so glad your little adventurer is ready to explore the world with their new {theme.productName}!
+              {config.welcome_subtitle || `We're so glad your little adventurer is ready to explore the world with their new ${theme.productName}!`}
             </p>
 
             <p className="text-base md:text-lg text-gray-600 leading-relaxed px-4">

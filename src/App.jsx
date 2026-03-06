@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import WelcomeStep from './components/WelcomeStep';
 import InfoStep from './components/InfoStep';
@@ -6,12 +6,14 @@ import ReviewStep from './components/ReviewStep';
 import GiftsStep from './components/GiftsStep';
 import AmazonModal from './components/AmazonModal';
 import AdminDashboard from './components/AdminDashboard';
+import AdminConfig from './components/AdminConfig';
 import { getTheme } from './utils/theme';
 import {
   createSubmission,
   updateReviewData,
   trackAmazonVisit,
-  trackGiftsClaimed
+  trackGiftsClaimed,
+  loadConfig
 } from './utils/supabase';
 
 /**
@@ -28,6 +30,11 @@ function CustomerFlow() {
   const [submissionId, setSubmissionId] = useState(null);
   const [showAmazonModal, setShowAmazonModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [siteConfig, setSiteConfig] = useState({});
+
+  useEffect(() => {
+    loadConfig().then(cfg => setSiteConfig(cfg));
+  }, []);
 
   const handleWelcomeContinue = () => setCurrentStep(2);
 
@@ -56,7 +63,9 @@ function CustomerFlow() {
   const handleAmazonRedirect = () => setShowAmazonModal(true);
 
   const handleConfirmAmazonRedirect = async () => {
-    window.open(theme.amazonReviewUrl, '_blank');
+    const configKey = `amazon_review_url_${theme.slug}`;
+    const amazonUrl = siteConfig[configKey] || theme.amazonReviewUrl;
+    window.open(amazonUrl, '_blank');
     setShowAmazonModal(false);
     if (submissionId) {
       try { await trackAmazonVisit(submissionId); } catch (e) { console.error(e); }
@@ -89,7 +98,7 @@ function CustomerFlow() {
       )}
 
       {currentStep === 1 && (
-        <WelcomeStep onContinue={handleWelcomeContinue} onSkipToGifts={handleSkipToGifts} theme={theme} />
+        <WelcomeStep onContinue={handleWelcomeContinue} onSkipToGifts={handleSkipToGifts} theme={theme} config={siteConfig} />
       )}
       {currentStep === 2 && (
         <InfoStep onContinue={handleInfoContinue} onBack={handleBack} onSkipToGifts={handleSkipToGifts} initialData={customerData} theme={theme} />
@@ -98,7 +107,7 @@ function CustomerFlow() {
         <ReviewStep onAmazonRedirect={handleAmazonRedirect} onClaimGifts={handleClaimGifts} onReviewGenerated={handleReviewGenerated} onBack={handleBack} theme={theme} />
       )}
       {currentStep === 4 && (
-        <GiftsStep onGiftsClaimed={handleGiftsClaimed} onBack={handleBack} theme={theme} />
+        <GiftsStep onGiftsClaimed={handleGiftsClaimed} onBack={handleBack} theme={theme} config={siteConfig} />
       )}
 
       <AmazonModal
@@ -114,10 +123,11 @@ function CustomerFlow() {
 /**
  * AdminLogin - password-based admin access
  */
-function AdminLogin() {
+function AdminLogin({ page = 'dashboard' }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentPage, setCurrentPage] = useState(page);
   const navigate = useNavigate();
 
   const ADMIN_PASSWORD = process.env.REACT_APP_ADMIN_PASSWORD || 'admin123';
@@ -131,7 +141,12 @@ function AdminLogin() {
     }
   };
 
-  if (isAuthenticated) return <AdminDashboard />;
+  if (isAuthenticated) {
+    if (currentPage === 'config') {
+      return <AdminConfig onBack={() => setCurrentPage('dashboard')} />;
+    }
+    return <AdminDashboard onGoToConfig={() => setCurrentPage('config')} />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-12 bg-gray-50">
@@ -226,7 +241,8 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/dino" element={<CustomerFlow />} />
       <Route path="/unicorn" element={<CustomerFlow />} />
-      <Route path="/admin" element={<AdminLogin />} />
+      <Route path="/admin" element={<AdminLogin page="dashboard" />} />
+      <Route path="/admin/config" element={<AdminLogin page="config" />} />
     </Routes>
   );
 }

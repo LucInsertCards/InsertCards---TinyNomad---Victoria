@@ -116,3 +116,34 @@ export async function trackGiftDownload(customerId, giftType, productSlug) {
     console.error('Error tracking gift download:', error);
   }
 }
+
+/**
+ * Load config from tn_config table
+ * Returns an object { key: value }
+ */
+let configCache = null;
+
+export async function loadConfig() {
+  if (configCache) return configCache;
+  if (!supabase) return {};
+
+  try {
+    const { data, error } = await supabase
+      .from('tn_config')
+      .select('key, value');
+
+    if (error) throw error;
+
+    const config = {};
+    (data || []).forEach(row => { config[row.key] = row.value; });
+    configCache = config;
+    return config;
+  } catch (err) {
+    console.error('Error loading config:', err);
+    return {};
+  }
+}
+
+export function clearConfigCache() {
+  configCache = null;
+}

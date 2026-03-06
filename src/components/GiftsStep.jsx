@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { trackGiftDownload } from '../utils/supabase';
 
-const GiftsStep = ({ onGiftsClaimed, onBack, theme }) => {
+const GiftsStep = ({ onGiftsClaimed, onBack, theme, config = {} }) => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -19,8 +19,9 @@ const GiftsStep = ({ onGiftsClaimed, onBack, theme }) => {
     }
   };
 
-  // eBook download link — update this with the real Supabase Storage or Google Drive URL
-  const ebookLink = 'https://ncnhxugldoskqlvpwrrs.supabase.co/storage/v1/object/public/ebooks/tinynomad-travel-guide.pdf';
+  const ebookLink = config.ebook_url || 'https://ncnhxugldoskqlvpwrrs.supabase.co/storage/v1/object/public/ebooks/tinynomad-travel-guide.pdf';
+  const giftTitle = config.gift_title || 'The Ultimate Family Travel Guide';
+  const giftDescription = config.gift_description || 'Tips, hacks, and fun activities to make every family trip unforgettable. From airport survival tips to kid-friendly destinations — everything you need for stress-free travel with your little nomad!';
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-12">
@@ -56,12 +57,12 @@ const GiftsStep = ({ onGiftsClaimed, onBack, theme }) => {
 
           {/* Title */}
           <h3 className="text-2xl font-bold tracking-wide text-center mb-3 text-gray-900">
-            The Ultimate Family Travel Guide
+            {giftTitle}
           </h3>
 
           {/* Description */}
           <p className="text-sm text-gray-600 text-center mb-8 leading-relaxed">
-            Tips, hacks, and fun activities to make every family trip unforgettable. From airport survival tips to kid-friendly destinations — everything you need for stress-free travel with your little nomad!
+            {giftDescription}
           </p>
 
           {/* Download Button */}
